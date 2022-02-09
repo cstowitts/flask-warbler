@@ -28,11 +28,12 @@ class EditUserForm(FlaskForm):
     """Form for updating current user"""
     username = StringField('Username', validators=[DataRequired()])
     email = StringField('E-mail', validators=[DataRequired(), Email()])
-    image_url = StringField('(Optional) Image URL', validators=[Optional(), URL()])
-    header_image_url =StringField('(Optional) Header URL', validators=[Optional(), URL()])
+    image_url = StringField('(Optional) Image URL', validators=[Optional()])
+    header_image_url = StringField('(Optional) Header URL', validators=[Optional()])
     bio = TextAreaField('Bio', validators=[Optional(), Length(max=160)])
 
-    password = PasswordField('Password -- ARE YOU YOU?', validators=[Length(min=6)])
+
+    password = PasswordField('Password', validators=[Length(min=6)])
 
 
 class CSRFProtectForm(FlaskForm):
