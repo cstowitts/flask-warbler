@@ -120,6 +120,7 @@ class User(db.Model):
         )
 
         db.session.add(user)
+        #TODO?! NOT COMMITED
         return user
 
     @classmethod
