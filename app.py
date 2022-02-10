@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectForm, EditUserForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, Likes
 
 CURR_USER_KEY = "curr_user"  # this is the key in the session
 
@@ -308,6 +308,16 @@ def messages_destroy(message_id):
 
 ##############################################################################
 # Likes for messages
+
+# TODO: make a route for /like 
+#
+# updates the databaase with new like
+# use boolean to figure out if liked already or not
+# fills in star if truthy/outline star if falsey
+# reloads entire page
+#
+
+
 
 # TODO:
 # create the actual star/like icon in html 
