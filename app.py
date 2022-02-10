@@ -119,13 +119,13 @@ def login():
 def logout():
     """Handle logout of user."""
 
-    # TODO: fail fast, be more aggressive
-    # if not current user, GET OUTTA HERE IMMEDIATELY!!
-    # raise Unauthorize()
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
 
     if g.csrf_form.validate_on_submit():
         do_logout()
-        flash("You've successfully logged out! BYEEEE~")
+        flash("You've successfully logged out!")
 
     return redirect("/")
 
@@ -245,15 +245,14 @@ def edit_profile():
 def delete_user():
     """Delete user."""
 
-    # TODO: CSRF protection
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    do_logout()
-
-    db.session.delete(g.user)
-    db.session.commit()
+    if g.csrf_form.validate_on_submit():
+        db.session.delete(g.user)
+        db.session.commit()
+        flash("User successfully deleted :(", "warning")
 
     return redirect("/signup")
 
@@ -305,6 +304,15 @@ def messages_destroy(message_id):
     db.session.commit()
 
     return redirect(f"/users/{g.user.id}")
+
+
+##############################################################################
+# Likes for messages
+
+# TODO:
+# create the actual star/like icon in html 
+# logic to toggle icon, check if the message has already been liked or not
+# action to update database when message is liked/unliked
 
 
 ##############################################################################

@@ -26,6 +26,57 @@ class Follows(db.Model):
         primary_key=True,
     )
 
+class Message(db.Model):
+    """An individual message ("warble")."""
+
+    __tablename__ = 'messages'
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    text = db.Column(
+        db.String(140),
+        nullable=False,
+    )
+
+    timestamp = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False,
+    )
+
+    user = db.relationship('User')
+
+
+class Likes(db.Model):
+    """Relationship describing a user and a message they've liked"""
+
+    __tablename__ = 'likes'
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    liker_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id')
+    )
+
+    message_id = db.Column(
+        db.Integer,
+        db.ForeignKey('messages.id')
+    )
+
 
 class User(db.Model):
     """User in the system."""
@@ -34,7 +85,7 @@ class User(db.Model):
 
     id = db.Column(
         db.Integer,
-        primary_key=True,
+        primary_key=True
     )
 
     email = db.Column(
@@ -74,6 +125,13 @@ class User(db.Model):
 
     messages = db.relationship('Message', order_by='Message.timestamp.desc()')
 
+    liked_messages = db.relationship(
+        'Message',
+        secondary="likes",
+        primaryjoin=(id == Likes.liker_id),
+        secondaryjoin=(Likes.message_id == Message.id)
+        )
+
     followers = db.relationship(
         "User",
         secondary="follows",
@@ -94,13 +152,15 @@ class User(db.Model):
     def is_followed_by(self, other_user):
         """Is this user followed by `other_user`?"""
 
-        found_user_list = [user for user in self.followers if user == other_user]
+        found_user_list = [
+            user for user in self.followers if user == other_user]
         return len(found_user_list) == 1
 
     def is_following(self, other_user):
         """Is this user following `other_use`?"""
 
-        found_user_list = [user for user in self.following if user == other_user]
+        found_user_list = [
+            user for user in self.following if user == other_user]
         return len(found_user_list) == 1
 
     @classmethod
@@ -120,7 +180,7 @@ class User(db.Model):
         )
 
         db.session.add(user)
-        #TODO?! NOT COMMITED
+
         return user
 
     @classmethod
@@ -144,34 +204,6 @@ class User(db.Model):
         return False
 
 
-class Message(db.Model):
-    """An individual message ("warble")."""
-
-    __tablename__ = 'messages'
-
-    id = db.Column(
-        db.Integer,
-        primary_key=True,
-    )
-
-    text = db.Column(
-        db.String(140),
-        nullable=False,
-    )
-
-    timestamp = db.Column(
-        db.DateTime,
-        nullable=False,
-        default=datetime.utcnow,
-    )
-
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey('users.id', ondelete='CASCADE'),
-        nullable=False,
-    )
-
-    user = db.relationship('User')
 
 
 def connect_db(app):
