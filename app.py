@@ -119,7 +119,7 @@ def login():
 def logout():
     """Handle logout of user."""
 
-    #TODO: fail fast, be more aggressive
+    # TODO: fail fast, be more aggressive
     # if not current user, GET OUTTA HERE IMMEDIATELY!!
     # raise Unauthorize()
 
