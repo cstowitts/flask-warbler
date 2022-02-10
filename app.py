@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectForm, EditUserForm
 from models import db, connect_db, User, Message
 
-CURR_USER_KEY = "curr_user"  #this is the key in the session
+CURR_USER_KEY = "curr_user"  # this is the key in the session
 
 app = Flask(__name__)
 
@@ -16,7 +16,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     os.environ['DATABASE_URL'].replace("postgres://", "postgresql://"))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ECHO'] = True #originally False
+app.config['SQLALCHEMY_ECHO'] = True  # originally False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 toolbar = DebugToolbarExtension(app)
@@ -38,11 +38,13 @@ def add_user_to_g():
     else:
         g.user = None
 
+
 @app.before_request
 def add_crsf_form_to_all_pages():
     """Before every route, add CSRF-only form to global object"""
 
     g.csrf_form = CSRFProtectForm()
+
 
 def do_login(user):
     """Log in user."""
@@ -116,13 +118,16 @@ def login():
 @app.post('/logout')
 def logout():
     """Handle logout of user."""
-   
+
+    # fail fast, be more aggressive
+    # if not current user, GET OUTTA HERE IMMEDIATELY!!
+    # raise Unauthorize()
+
     if g.csrf_form.validate_on_submit():
         do_logout()
         flash("You've successfully logged out! BYEEEE~")
-   
-    return redirect("/")
 
+    return redirect("/")
 
 
 ##############################################################################
@@ -221,26 +226,26 @@ def edit_profile():
     if form.validate_on_submit():
         g.user.email = form.email.data
         g.user.username = form.username.data
-        g.user.image_url = form.image_url.data
-        g.user.header_image_url = form.header_image_url.data
+        g.user.image_url = (form.image_url.data or
+                            "/static/images/default-pic.png")
+        g.user.header_image_url = (form.header_image_url.data or
+                                   "/static/images/warbler-hero.jpg")
         g.user.bio = form.bio.data
         if User.authenticate(g.user.username, form.password.data):
             db.session.commit()
             flash("Profile successfully updated!", 'success')
             return redirect(f'/users/{g.user.id}')
         else:
-            flash("Incorrect password YOU CRIMINAL", 'danger')
-            return redirect('/')
+            flash("Incorrect password.", 'danger')
 
-    else:
-        return render_template('users/edit.html', form=form)
-
+    return render_template('users/edit.html', form=form)
 
 
 @app.post('/users/delete')
 def delete_user():
     """Delete user."""
 
+    # TODO: CSRF protection
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -319,7 +324,7 @@ def homepage():
 
         for person in g.user.following:
             ids_for_feed.append(person.id)
-        #breakpoint()
+        # breakpoint()
         messages = (Message
                     .query
                     .filter(Message.user_id.in_(ids_for_feed))
