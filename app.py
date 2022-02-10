@@ -315,8 +315,14 @@ def homepage():
     """
 
     if g.user:
+        ids_for_feed = [g.user.id]
+
+        for person in g.user.following:
+            ids_for_feed.append(person.id)
+        #breakpoint()
         messages = (Message
                     .query
+                    .filter(Message.user_id.in_(ids_for_feed))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
