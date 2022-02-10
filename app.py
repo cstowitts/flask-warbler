@@ -331,8 +331,28 @@ def like_message(msg_id):
         db.session.add(like)
         db.session.commit()
         flash("Warble message liked!", "success")
+        ##TODO: Change to redirect back to where user came froom
+
+    return redirect("/")
+
+@app.post('/unlike/<int:msg_id>')
+def unlike_message(msg_id):
+    """Unlike a message"""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
         return redirect("/")
 
+    if g.csrf_form.validate_on_submit():
+        like = Likes.query.filter_by(message_id=msg_id).filter_by(liker_id = g.user.id).one_or_none()
+
+        if like:
+            db.session.delete(like)
+            db.session.commit()
+            flash("You have unliked this post!", "warning")
+    
+    ##TODO: Change to redirect back to where user came froom
+    return redirect("/")
 
 
 
