@@ -309,18 +309,36 @@ def messages_destroy(message_id):
 ##############################################################################
 # Likes for messages
 
-# TODO: make a route for /like 
+# TODO: make a route for /like
 #
-# updates the databaase with new like
+# updates the database with new like
 # use boolean to figure out if liked already or not
 # fills in star if truthy/outline star if falsey
 # reloads entire page
-#
+# how do we grab the correct message when liked?
+# how to know where to redirect to?
+
+@app.post('/like/<int:msg_id>')
+def like_message(msg_id):
+    """Like a message."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    if g.csrf_form.validate_on_submit():
+        like = Likes(liker_id=g.user.id, message_id=msg_id)
+        db.session.add(like)
+        db.session.commit()
+        flash("Warble message liked!", "success")
+        return redirect("/")
+
+
 
 
 
 # TODO:
-# create the actual star/like icon in html 
+# create the actual star/like icon in html
 # logic to toggle icon, check if the message has already been liked or not
 # action to update database when message is liked/unliked
 
