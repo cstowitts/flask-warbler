@@ -333,7 +333,7 @@ def like_message(msg_id):
         flash("Warble message liked!", "success")
         ##TODO: Change to redirect back to where user came froom
 
-    return redirect("/")
+    return redirect(session["RETURN_URL"])
 
 @app.post('/unlike/<int:msg_id>')
 def unlike_message(msg_id):

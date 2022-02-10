@@ -59,6 +59,8 @@
             </div>
           </li>
           <form action="/like/{{ msg.id }}" method="POST">
+            {% set session.RETURN_URL = "/" %}
+
             {{ g.csrf_form.hidden_tag() }}
             {% if msg in g.user.liked_messages %}
             <!-- display unlike button/filled in star -->
