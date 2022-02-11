@@ -33,21 +33,24 @@
             </div>
             <p class="single-message">{{ message.text }}</p>
             <span class="text-muted">{{ message.timestamp.strftime('%d %B %Y') }}</span>
+            <div class="un-like-btn-container">
+              <form action="/like/{{ message.id }}" method="POST">
+                <input name="came-from" value="{{ request.url }}" type="hidden">
+                {{ g.csrf_form.hidden_tag() }}
+                {% if message.user_id == g.user.id %}
+      
+                {% elif message in g.user.liked_messages %}
+                <!-- display unlike button/filled in star -->
+                  <button formaction="/unlike/{{ message.id }}" class="btn btn-primary">Unlike</button>
+                {% else %}
+                <!-- display like button/star outline -->
+                  <button class="btn btn-primary">Like</button>
+                {% endif %}
+              </form>
+            </div>
           </div>
         </li>
-        <form action="/like/{{ message.id }}" method="POST">
-          <input name="came-from" value="{{ request.url }}" type="hidden">
-          {{ g.csrf_form.hidden_tag() }}
-          {% if message.user_id == g.user.id %}
-
-          {% elif message in g.user.liked_messages %}
-          <!-- display unlike button/filled in star -->
-            <button formaction="/unlike/{{ message.id }}" class="btn btn-primary">Unlike</button>
-          {% else %}
-          <!-- display like button/star outline -->
-            <button class="btn btn-primary">Like</button>
-          {% endif %}
-        </form>
+        
       </ul>
     </div>
   </div>

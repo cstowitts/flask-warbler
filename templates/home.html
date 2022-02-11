@@ -48,32 +48,31 @@
       <ul class="list-group" id="messages">
         {% for msg in messages %}
           <li class="list-group-item">
-            <a href="/messages/{{ msg.id }}" class="message-link"/>
+            <a href="/messages/{{ msg.id }}" class="message-link"></a>
             <a href="/users/{{ msg.user.id }}">
               <img src="{{ msg.user.image_url }}" alt="" class="timeline-image">
             </a>
             <div class="message-area">
-              <a href="/users/{{ msg.user.id }}">@{{ msg.user.username }}</a>
-              <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y') }}</span>
-              <p>{{ msg.text }}</p>
+                <a href="/users/{{ msg.user.id }}">@{{ msg.user.username }}</a>
+                <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y') }}</span>
+                <p>{{ msg.text }}</p>
             </div>
+            <form action="/like/{{ msg.id }}" method="POST">
+              <input name="came-from" value="{{ request.url }}" type="hidden">
+              {{ g.csrf_form.hidden_tag() }}
+              {% if msg.user_id == g.user.id %}
+    
+              {% elif msg in g.user.liked_messages %}
+              <!-- display unlike button/filled in star -->
+                <button formaction="/unlike/{{ msg.id }}" class="btn btn-primary">Unlike</button>
+              {% else %}
+              <!-- display like button/star outline -->
+                <button class="btn btn-primary">Like</button>
+              {% endif %}
+            </form>
           </li>
-          <form action="/like/{{ msg.id }}" method="POST">
-            <input name="came-from" value="{{ request.url }}" type="hidden">
-            {{ g.csrf_form.hidden_tag() }}
-            {% if msg.user_id == g.user.id %}
-
-            {% elif msg in g.user.liked_messages %}
-            <!-- display unlike button/filled in star -->
-              <button formaction="/unlike/{{ msg.id }}" class="btn btn-primary">Unlike</button>
-            {% else %}
-            <!-- display like button/star outline -->
-              <button class="btn btn-primary">Like</button>
-            {% endif %}
-          </form>
         {% endfor %}
       </ul>
     </div>
-
   </div>
 {% endblock %}

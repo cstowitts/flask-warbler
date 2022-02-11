@@ -419,6 +419,8 @@ def homepage():
     else:
         return render_template('home-anon.html')
 
+# TODO: WHY IN GOD'S NAME DOES EVERY CLICK IN THE MESSAGE BOX GO TO THE SAME PLACE? 
+# EVEN WITH BUTTON ACTION EXPLICITLY NOT??? SO SIMILAR TO SOLUTION??
 
 ##############################################################################
 # Turn off all caching in Flask
