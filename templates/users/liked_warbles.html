@@ -21,8 +21,8 @@
           </div>
         </li>
         <form action="/like/{{ msg.id }}" method="POST">
+          {{ g.csrf_form.hidden_tag() }}
             <input name="came-from" value="{{ request.url }}" type="hidden">
-            {{ g.csrf_form.hidden_tag() }}
             {% if msg.user_id == g.user.id %}
 
             {% elif msg in g.user.liked_messages %}

@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectForm, EditUserForm
-from models import db, connect_db, User, Message, Likes
+from models import db, connect_db, User, Message, Likes, Follows
 
 CURR_USER_KEY = "curr_user"  # this is the key in the session
 
@@ -195,30 +195,38 @@ def users_followers(user_id):
 def add_follow(follow_id):
     """Add a follow for the currently-logged-in user."""
 
+    came_from_url = request.form.get("came-from")
+
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    followed_user = User.query.get_or_404(follow_id)
-    g.user.following.append(followed_user)
-    db.session.commit()
+    if g.csrf_form.validate_on_submit():
+        followed_user = User.query.get_or_404(follow_id)
+        g.user.following.append(followed_user)
+        db.session.commit()
+        flash(f"You are now following {followed_user.username}!", "info")
 
-    return redirect(f"/users/{g.user.id}/following")
+    return redirect(came_from_url)
 
 
 @app.post('/users/stop-following/<int:follow_id>')
 def stop_following(follow_id):
     """Have currently-logged-in-user stop following this user."""
 
+    came_from_url = request.form.get("came-from")
+
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    followed_user = User.query.get(follow_id)
-    g.user.following.remove(followed_user)
-    db.session.commit()
+    if g.csrf_form.validate_on_submit():
+        followed_user = User.query.get(follow_id)
+        g.user.following.remove(followed_user)
+        db.session.commit()
+        flash(f"You've unfollowed {followed_user.username}.", "warning")
 
-    return redirect(f"/users/{g.user.id}/following")
+    return redirect(came_from_url)
 
 
 @app.route('/users/profile', methods=["GET", "POST"])
@@ -248,6 +256,7 @@ def edit_profile():
 
     return render_template('users/edit.html', form=form)
 
+
 @app.get('/users/<int:user_id>/liked_messages')
 def display_liked_messages(user_id):
     """Display all messages a user has liked"""
@@ -255,11 +264,11 @@ def display_liked_messages(user_id):
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
-    
-    user = User.query.get_or_404(user_id)
-    
 
-    return render_template("users/liked_warbles.html", user =user)
+    user = User.query.get_or_404(user_id)
+
+    return render_template("users/liked_warbles.html", user=user)
+
 
 @app.post('/users/delete')
 def delete_user():
@@ -270,6 +279,10 @@ def delete_user():
         return redirect("/")
 
     if g.csrf_form.validate_on_submit():
+        Message.query.filter_by(user_id=g.user.id).delete()
+        Follows.query.filter_by(user_being_followed_id=g.user.id).delete()
+        Follows.query.filter_by(user_following_id=g.user.id).delete()
+        Likes.query.filter_by(liker_id=g.user.id).delete()
         db.session.delete(g.user)
         db.session.commit()
         flash("User successfully deleted :(", "warning")
@@ -319,9 +332,11 @@ def messages_destroy(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    msg = Message.query.get(message_id)
-    db.session.delete(msg)
-    db.session.commit()
+    if g.csrf_form.validate_on_submit():
+        msg = Message.query.get(message_id)
+        db.session.delete(msg)
+        db.session.commit()
+        flash("Your Warble has been deleted.", "warning")
 
     return redirect(f"/users/{g.user.id}")
 
@@ -419,7 +434,7 @@ def homepage():
     else:
         return render_template('home-anon.html')
 
-# TODO: WHY IN GOD'S NAME DOES EVERY CLICK IN THE MESSAGE BOX GO TO THE SAME PLACE? 
+# TODO: WHY IN GOD'S NAME DOES EVERY CLICK IN THE MESSAGE BOX GO TO THE SAME PLACE?
 # EVEN WITH BUTTON ACTION EXPLICITLY NOT??? SO SIMILAR TO SOLUTION??
 
 ##############################################################################
@@ -428,6 +443,7 @@ def homepage():
 #   handled elsewhere)
 #
 # https://stackoverflow.com/questions/34066804/disabling-caching-in-flask
+
 
 @app.after_request
 def add_header(response):

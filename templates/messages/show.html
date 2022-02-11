@@ -17,15 +17,20 @@
                 {% if g.user.id == message.user.id %}
                   <form method="POST"
                         action="/messages/{{ message.id }}/delete">
+                    {{ g.csrf_form.hidden_tag() }}
                     <button class="btn btn-outline-danger">Delete</button>
                   </form>
                 {% elif g.user.is_following(message.user) %}
                   <form method="POST"
                         action="/users/stop-following/{{ message.user.id }}">
+                    {{ g.csrf_form.hidden_tag() }}
+                    <input name="came-from" value="{{ request.url }}" type="hidden">
                     <button class="btn btn-primary">Unfollow</button>
                   </form>
                 {% else %}
                   <form method="POST" action="/users/follow/{{ message.user.id }}">
+                    {{ g.csrf_form.hidden_tag() }}
+                    <input name="came-from" value="{{ request.url }}" type="hidden">
                     <button class="btn btn-outline-primary btn-sm">Follow</button>
                   </form>
                 {% endif %}
@@ -33,10 +38,9 @@
             </div>
             <p class="single-message">{{ message.text }}</p>
             <span class="text-muted">{{ message.timestamp.strftime('%d %B %Y') }}</span>
-            <div class="un-like-btn-container">
-              <form action="/like/{{ message.id }}" method="POST">
-                <input name="came-from" value="{{ request.url }}" type="hidden">
+              <form action="/like/{{ message.id }}" method="POST" class="likes-form">
                 {{ g.csrf_form.hidden_tag() }}
+                <input name="came-from" value="{{ request.url }}" type="hidden">
                 {% if message.user_id == g.user.id %}
       
                 {% elif message in g.user.liked_messages %}
@@ -47,7 +51,6 @@
                   <button class="btn btn-primary">Like</button>
                 {% endif %}
               </form>
-            </div>
           </div>
         </li>
         
