@@ -248,6 +248,18 @@ def edit_profile():
 
     return render_template('users/edit.html', form=form)
 
+@app.get('/users/<int:user_id>/liked_messages')
+def display_liked_messages(user_id):
+    """Display all messages a user has liked"""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    user = User.query.get_or_404(user_id)
+    
+
+    return render_template("users/liked_warbles.html", user =user)
 
 @app.post('/users/delete')
 def delete_user():
