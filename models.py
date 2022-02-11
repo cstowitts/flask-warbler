@@ -77,6 +77,10 @@ class Likes(db.Model):
         db.ForeignKey('messages.id')
     )
 
+    # data model enables double likes, even if UI doesn't
+    # having a composite pk would prevent that (combo of two ids unique)
+
+
 
 class User(db.Model):
     """User in the system."""
@@ -131,6 +135,10 @@ class User(db.Model):
         primaryjoin=(id == Likes.liker_id),
         secondaryjoin=(Likes.message_id == Message.id)
         )
+    # user and message L/R tables, not the same so they don't need primary
+    # and secondary joins
+    # TODO: get rid of primary and secondary, add backref
+    # TODO: messages relationship, backref = liking_users
 
     followers = db.relationship(
         "User",
@@ -138,6 +146,10 @@ class User(db.Model):
         primaryjoin=(Follows.user_being_followed_id == id),
         secondaryjoin=(Follows.user_following_id == id)
     )
+    # M:M user table is both left and right to follows table
+    # requires both primary and secondary joins bc the computer doesn't know
+    # since referring to same table--gotta explain to SQLAlchemy
+    # (you can make a join not on equality)
 
     following = db.relationship(
         "User",

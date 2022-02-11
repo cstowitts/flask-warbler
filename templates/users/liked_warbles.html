@@ -19,20 +19,21 @@
             </span>
             <p>{{ msg.text }}</p>
           </div>
+          <form action="/like/{{ msg.id }}" method="POST" class="likes-form">
+            {{ g.csrf_form.hidden_tag() }}
+              <input name="came-from" value="{{ request.url }}" type="hidden">
+              {% if msg.user_id == g.user.id %}
+  
+              {% elif msg in g.user.liked_messages %}
+              <!-- display unlike button/filled in star -->
+                <button formaction="/unlike/{{ msg.id }}" class="btn btn-primary">Unlike</button>
+              {% else %}
+              <!-- display like button/star outline -->
+                <button class="btn btn-primary">Like</button>
+              {% endif %}
+            </form>
         </li>
-        <form action="/like/{{ msg.id }}" method="POST">
-          {{ g.csrf_form.hidden_tag() }}
-            <input name="came-from" value="{{ request.url }}" type="hidden">
-            {% if msg.user_id == g.user.id %}
-
-            {% elif msg in g.user.liked_messages %}
-            <!-- display unlike button/filled in star -->
-              <button formaction="/unlike/{{ msg.id }}" class="btn btn-primary">Unlike</button>
-            {% else %}
-            <!-- display like button/star outline -->
-              <button class="btn btn-primary">Like</button>
-            {% endif %}
-          </form>
+        
       {% endfor %}
 
     </ul>

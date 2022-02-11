@@ -46,14 +46,6 @@ def add_crsf_form_to_all_pages():
     g.csrf_form = CSRFProtectForm()
 
 
-# @app.before_request
-# def log_url_in_session():
-#     """For get requests, save the url of the endpoint into the session"""
-#     if request.method == "GET":
-#         session["url"] =  url_for(request.endpoint)
-#         # url_for(request.endpoint)
-
-
 def do_login(user):
     """Log in user."""
 
@@ -373,6 +365,7 @@ def like_message(msg_id):
 
     return redirect(came_from_url)
 
+# could consolidate into one toggle status function
 
 @app.post('/unlike/<int:msg_id>')
 def unlike_message(msg_id):
