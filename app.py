@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, render_template, request, flash, redirect, session, g
+from flask import Flask, render_template, request, flash, redirect, session, g, url_for
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
@@ -44,6 +44,14 @@ def add_crsf_form_to_all_pages():
     """Before every route, add CSRF-only form to global object"""
 
     g.csrf_form = CSRFProtectForm()
+
+
+# @app.before_request
+# def log_url_in_session():
+#     """For get requests, save the url of the endpoint into the session"""
+#     if request.method == "GET":
+#         session["url"] =  url_for(request.endpoint)
+#         # url_for(request.endpoint)
 
 
 def do_login(user):
@@ -322,6 +330,8 @@ def messages_destroy(message_id):
 def like_message(msg_id):
     """Like a message."""
 
+    came_from_url = request.form.get("came-from")
+
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -331,30 +341,34 @@ def like_message(msg_id):
         db.session.add(like)
         db.session.commit()
         flash("Warble message liked!", "success")
-        ##TODO: Change to redirect back to where user came froom
+    else:
+        flash("Warble message like unsuccessful.", "danger")
 
-    return redirect(session["RETURN_URL"])
+    return redirect(came_from_url)
+
 
 @app.post('/unlike/<int:msg_id>')
 def unlike_message(msg_id):
     """Unlike a message"""
+
+    came_from_url = request.form.get("came-from")
 
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
     if g.csrf_form.validate_on_submit():
-        like = Likes.query.filter_by(message_id=msg_id).filter_by(liker_id = g.user.id).one_or_none()
+        like = Likes.query.filter_by(message_id=msg_id).filter_by(
+            liker_id=g.user.id).one_or_none()
 
         if like:
             db.session.delete(like)
             db.session.commit()
             flash("You have unliked this post!", "warning")
-    
-    ##TODO: Change to redirect back to where user came froom
-    return redirect("/")
+    else:
+        flash("Warble message unlike unsuccessful.", "danger")
 
-
+    return redirect(came_from_url)
 
 
 # TODO:
